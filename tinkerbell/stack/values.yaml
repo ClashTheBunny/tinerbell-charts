@@ -16,23 +16,20 @@ stack:
     enabled: true
     name: hook-files
     port: 8080
-    image: alpine
+    image: bash
     downloadsDest: /opt/hook
-    downloads:
-      - url: https://github.com/tinkerbell/hook/releases/download/v0.8.1/hook_x86_64.tar.gz
-        sha512sum: 29d8cf6991272eea20499d757252b07deba824eb778368192f9ab88b215a0dafa584e83422dac08feeb43ddce65f485557ad66210f005a81ab95fb53b7d8d424
-      - url: https://github.com/tinkerbell/hook/releases/download/v0.8.1/hook_aarch64.tar.gz
-        sha512sum: f740af6941b2b7d4edcded3f0ae19985ef160fb5cb82995c7e6ce528ad8171a6e0b49920bdc2c58242efed84e9000bcfb53bf1c004cf13190092a1501eaa9dd6
+    # downloadURL only works with the > 0.8.1 Hook release because
+    # previous Hook versions didn't provide a checksum file.
+    downloadURL: https://github.com/tinkerbell/hook/releases/download/latest
   kubevip:
     enabled: true
     name: kube-vip
-    image: ghcr.io/kube-vip/kube-vip:v0.5.12
+    image: ghcr.io/kube-vip/kube-vip:v0.6.3
     imagePullPolicy: IfNotPresent
     roleName: kube-vip-role
     roleBindingName: kube-vip-rolebinding
-    # Customize the interface KubeVIP advertises on. When unset, KubeVIP will autodetect the
-    # interface.
-    #interface: enp0s8
+    # Customize the interface KubeVIP advertises on. When unset, KubeVIP will autodetect the interface.
+    # interface: enp0s8
   relay: # relay allows us to listen and respond to layer broadcast DHCP requests
     name: dhcp-relay
     enabled: true
@@ -43,6 +40,7 @@ stack:
     # sourceInterface is the Host/Node interface to use for listening for DHCP broadcast packets.
     # When unset, the interface from the default route will be used.
     # sourceInterface: eno1
+    # TODO(jacobweinstock): add feature to be able to disable listening for broadcast traffic.
 
 # -- Overrides
 # The values defined here override those in the individual charts. Some of them require tweaking
@@ -50,28 +48,18 @@ stack:
 #
 # See individual chart documentation for additional detail.
 
-boots:
-  image: quay.io/tinkerbell/boots:v0.9.0
+smee:
+  image: quay.io/tinkerbell/smee:v0.10.1
   tinkWorkerImage: quay.io/tinkerbell/tink-worker:v0.9.0
   trustedProxies: []
-  # This will be the IP address that machines use to reach Boots (via unicast for DHCP and for tftp/http of ipxe binaries/scripts) for netbooting.
-  # It should be a unused IP address in your network.
-  # Once the Kubernetes Gateway API and an implementation is available that can implements HTTP(S), UDP, GRPC, and transparent proxying, we will use that
-  # and be able to require only a single IP for all Tinkerbell services.
-  remoteIp: 192.168.2.113
-  tinkServer:
-    # This should be the same as `stack.loadBalancerIP`.
-    ip: *publicIP
-  osieBase:
-    # This should be the same as `stack.loadBalancerIP`.
-    ip: *publicIP
+  publicIP: *publicIP
 
 hegel:
-  image: quay.io/tinkerbell/hegel:v0.11.0
+  image: quay.io/tinkerbell/hegel:v0.11.1
   trustedProxies: []
 
 rufio:
-  image: quay.io/tinkerbell/rufio:v0.3.1
+  image: quay.io/tinkerbell/rufio:v0.3.2
 
 tink:
   controller:
